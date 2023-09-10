@@ -14,14 +14,8 @@ exp = ClassificationExperiment()
 # init setup on exp
 exp.setup(data, target = 'Class variable', session_id = 123)
 
-# Create a progress bar
-progress_bar = st.progress(0)
-
 # compare baseline models
 best = compare_models()
-
-# Update the progress bar when appropriate
-progress_bar.progress(50)  # Set to 100% when done
 
 st.write(best)
 
