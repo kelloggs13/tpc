@@ -25,3 +25,5 @@ progress_bar.progress(50)  # Set to 100% when done
 
 st.write(best)
 
+st.write(best[0])
+
