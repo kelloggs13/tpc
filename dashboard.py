@@ -1,7 +1,7 @@
 import streamlit as st
 
 from pycaret.datasets import get_data
-data = get_data('diabetes')[1:100]
+data = get_data('diabetes')
 
 # import pycaret classification and init setup
 from pycaret.classification import *
