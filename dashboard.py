@@ -1,5 +1,5 @@
-import pandas as pd
 import streamlit as st
+import pandas as pd
 from pycaret.classification import *
 
 st.title("Machine Learning Model with PyCaret")
@@ -8,9 +8,14 @@ st.title("Machine Learning Model with PyCaret")
 uploaded_file = st.file_uploader("Upload a CSV or XLSX file", type=["csv", "xlsx"])
 
 if uploaded_file is not None:
-    # Load the dataset
-    df = pd.read_csv(uploaded_file)  # For CSV files
-    # df = pd.read_excel(uploaded_file)  # For XLSX files
+    # Read the uploaded file as a DataFrame
+    if uploaded_file.name.endswith(".csv"):
+        df = pd.read_csv(uploaded_file)
+    elif uploaded_file.name.endswith(".xlsx"):
+        df = pd.read_excel(uploaded_file)
+    else:
+        st.error("Invalid file format. Please upload a CSV or XLSX file.")
+        st.stop()
 
     # Display the dataset
     st.dataframe(df)
@@ -20,7 +25,7 @@ if uploaded_file is not None:
 
     if st.button("Train Model"):
         # Initialize PyCaret
-        exp = setup(data=df, target=target_col, use_gpu=True))
+        exp = setup(data=df, target=target_col, use_gpu = True)
 
         # Compare models and select the best one
         best_model = compare_models()
@@ -30,7 +35,6 @@ if uploaded_file is not None:
 
         # Make predictions on hold-out data
         predictions = predict_model(best_model)
-        st.write(predictions.head())
 
         # Display predictions
         st.dataframe(predictions)
