@@ -1,23 +1,45 @@
 import streamlit as st
-
-from pycaret.datasets import get_data
-data = get_data('diabetes')
-
-# import pycaret classification and init setup
+import pandas as pd
 from pycaret.classification import *
-s = setup(data, target = 'Class variable', session_id = 123)
 
-# import ClassificationExperiment and init the class
-from pycaret.classification import ClassificationExperiment
-exp = ClassificationExperiment()
+st.title("Machine Learning Model with PyCaret")
 
-# init setup on exp
-exp.setup(data, target = 'Class variable', session_id = 123)
+# Allow the user to upload a file (CSV or XLSX)
+uploaded_file = st.file_uploader("Upload a CSV or XLSX file", type=["csv", "xlsx"])
 
-# compare baseline models
-best = compare_models()
+if uploaded_file is not None:
+    # Read the uploaded file as a DataFrame
+    if uploaded_file.name.endswith(".csv"):
+        df = pd.read_csv(uploaded_file)
+    elif uploaded_file.name.endswith(".xlsx"):
+        df = pd.read_excel(uploaded_file)
+    else:
+        st.error("Invalid file format. Please upload a CSV or XLSX file.")
+        st.stop()
 
-st.write(best)
+    # Display the dataset
+    st.dataframe(df)
 
-st.write(best[0])
+    # Allow the user to select the target column
+    target_col = st.selectbox("Select the target column", df.columns)
 
+    if st.button("Train Model"):
+        # Initialize PyCaret
+        exp = setup(data=df, target=target_col, silent=True)
+
+        # Compare models and select the best one
+        best_model = compare_models()
+
+        # Plot the confusion matrix
+        plot_model(best_model, plot="confusion_matrix")
+
+        # Make predictions on hold-out data
+        predictions = predict_model(best_model)
+
+        # Display predictions
+        st.dataframe(predictions)
+
+        # Save the model
+        save_model(best_model, "best_model")
+
+        st.success("Model training and evaluation completed.")
