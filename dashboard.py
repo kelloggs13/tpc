@@ -1,64 +1,23 @@
-import streamlit as st
-import pandas as pd
-from pycaret.classification import *
-import time
-import matplotlib.pyplot as plt  # Import Matplotlib for plotting
+# load the dataset from pycaret
+from pycaret.datasets import get_data
+data = get_data('diamond')
+# initialize setup
+from pycaret.regression import *
+s = setup(data, target = 'Price', transform_target = True, log_experiment = True, experiment_name = 'diamond')
+# compare all models
+best = compare_models()
+# check the final params of best model
+best.get_params()
+# check the residuals of trained model
+plot_model(best, plot = 'residuals_interactive')
+plot_model(best, plot = ‘feature’)
+evaluate_model(best)
 
-def CalcTime():
-    elapsed_time = time.time() - start_time
-    st.write(f"Elapsed time: {elapsed_time:.6f} seconds")
+# copy data and remove target variable
+data_unseen = data.copy()
+data_unseen.drop(‘Price’, axis = 1, inplace = True)
+predictions = predict_model(best, data = data_unseen)
 
-st.title("Machine Learning Model with PyCaret")
 
-st.set_option('deprecation.showPyplotGlobalUse', False)
-
-# Allow the user to upload a file (CSV or XLSX)
-uploaded_file = st.file_uploader("Upload a CSV or XLSX file", type=["csv", "xlsx"])
-
-if uploaded_file is not None:
-    # Read the uploaded file as a DataFrame
-    if uploaded_file.name.endswith(".csv"):
-        df = pd.read_csv(uploaded_file)
-    elif uploaded_file.name.endswith(".xlsx"):
-        df = pd.read_excel(uploaded_file)
-    else:
-        st.error("Invalid file format. Please upload a CSV or XLSX file.")
-        st.stop()
-
-    # Display the dataset
-    st.dataframe(df)
-
-    # Allow the user to select the target column
-    target_col = st.selectbox("Select the target column", df.columns)
-
-    if st.button("Train Model"):
-        # Initialize PyCaret
-        start_time = time.time()
-
-        exp = setup(data=df, target=target_col, use_gpu=True, memory=False)
-        st.write("done setup")
-        CalcTime()
-
-        # Compare models and select the best one
-        best_model = compare_models()
-
-        st.write("done compare_models()")
-        CalcTime()
-
-        # Plot the confusion matrix
-        fig = plot_model(best_model, plot="confusion_matrix")
-        st.pyplot(fig)
-        CalcTime()
-
-        # Make predictions on hold-out data
-        predictions = predict_model(best_model)
-        CalcTime()
-
-        # Display predictions
-        st.dataframe(predictions)
-
-        # Save the model
-        save_model(best_model, "best_model")
-        CalcTime()
-
-        st.success("Model training and evaluation completed.")
+# from the command line
+# mlflow ui
